@@ -1,0 +1,129 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Excel计算器</title>
+  <style>
+    .container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+    .input-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+    .output-section { margin-top: 30px; }
+    .output-row { display: flex; margin-bottom: 10px; }
+    .output-cell { 
+      width: 80px; padding: 8px; margin: 0 5px;
+      border: 1px solid #ccc; text-align: center;
+    }
+    button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Excel计算工具</h1>
+    
+    <!-- 输入区域 -->
+    <div class="input-grid">
+      <div>
+        <label>C3: <input type="number" id="C3" step="0.01"></label>
+        <label>C4: <input type="number" id="C4" step="0.01"></label>
+        <label>K4: <input type="number" id="K4" step="0.01"></label>
+      </div>
+      <div>
+        <label>L25: <input type="number" id="L25" step="0.01"></label>
+        <label>M25: <input type="number" id="M25" step="0.01"></label>
+        <label>L28: <input type="number" id="L28" step="0.01"></label>
+      </div>
+      <div>
+        <label>M28: <input type="number" id="M28" step="0.01"></label>
+        <label>K30: <input type="number" id="K30" step="0.01"></label>
+        <label>L30: <input type="number" id="L30" step="0.01"></label>
+        <label>M30: <input type="number" id="M30" step="0.01"></label>
+      </div>
+    </div>
+
+    <!-- 按钮区域 -->
+    <div class="button-group">
+      <button onclick="executeCommand('refresh')">动刷新外部data</button>
+      <button onclick="executeCommand('getData2')">cmdGetData2</button>
+      <button onclick="executeCommand('webData')">GetWebData</button>
+      <button onclick="executeCommand('transfer')">TransferData</button>
+    </div>
+
+    <!-- 输出区域 -->
+    <div class="output-section">
+      <h3>计算结果 D57-M57:</h3>
+      <div class="output-row" id="row57-output"></div>
+      
+      <h3>计算结果 D58-M58:</h3>
+      <div class="output-row" id="row58-output"></div>
+    </div>
+  </div>
+
+  <script src="calculator.js"></script>
+  <script>
+    // 初始化计算器
+    const calculator = new ExcelCalculator();
+    
+    // 生成输出单元格
+    function initOutputCells() {
+      const row57 = document.getElementById('row57-output');
+      const row58 = document.getElementById('row58-output');
+      
+      for (let i = 0; i < 10; i++) {
+        const cell57 = document.createElement('div');
+        cell57.className = 'output-cell';
+        cell57.id = `cell57-${i}`;
+        cell57.textContent = '0';
+        row57.appendChild(cell57);
+        
+        const cell58 = document.createElement('div');
+        cell58.className = 'output-cell';
+        cell58.id = `cell58-${i}`;
+        cell58.textContent = '0';
+        row58.appendChild(cell58);
+      }
+    }
+    
+    // 更新输入值
+    function updateInputs() {
+      calculator.inputs.C3 = parseFloat(document.getElementById('C3').value) || 0;
+      // ...更新其他9个输入值
+    }
+    
+    // 执行命令
+    function executeCommand(cmd) {
+      updateInputs();
+      
+      // 显示加载状态
+      const buttons = document.querySelectorAll('button');
+      buttons.forEach(btn => btn.disabled = true);
+      
+      // 异步执行防止界面冻结
+      setTimeout(() => {
+        switch(cmd) {
+          case 'refresh': calculator.refreshExternalData(); break;
+          case 'getData2': calculator.cmdGetData2(); break;
+          case 'webData': calculator.getWebData(); break;
+          case 'transfer': calculator.transferData(); break;
+        }
+        
+        // 更新界面
+        calculator.outputs.row57.forEach((val, i) => {
+          document.getElementById(`cell57-${i}`).textContent = val.toFixed(2);
+        });
+        calculator.outputs.row58.forEach((val, i) => {
+          document.getElementById(`cell58-${i}`).textContent = val.toFixed(2);
+        });
+        
+        buttons.forEach(btn => btn.disabled = false);
+      }, 100);
+    }
+    
+    // 初始化
+    window.onload = () => {
+      initOutputCells();
+      // 设置默认值（可选）
+      document.getElementById('C3').value = 1.5;
+      // ...其他默认值
+    };
+  </script>
+</body>
+</html>
